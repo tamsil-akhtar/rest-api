@@ -1,0 +1,35 @@
+Step 1: The Gatekeeper (auth.routes.js)
+The HTTP request arrives at your server looking for the registration route.
+
+Inside auth.routes.js, you have a line like:
+router.post("/register", validate(RegisterDto), authController.register);
+
+Instead of sending the request straight to the controller, the router routes it into the validate middleware first, handing it the RegisterDto class blueprint.
+
+Step 2 & 3: The Inspector (validate.middleware.js & register.dto.js)
+The validate middleware executes. It intercepts the incoming payload (req.body).
+
+It immediately runs DtoClass.validate(req.body). Because you passed RegisterDto into it, JavaScript jumps over to your RegisterDto class.
+
+Inside register.dto.js, Joi inspects the data against your schema rules (Checking if the name is 2+ characters, email format is valid, password is 8+ characters).
+
+If validation fails: Joi generates an error object. The middleware catches it, halts execution, and throws an ApiError.badRequest(). The user gets an error message back, and your server stops processing.
+
+If validation passes: Joi cleans up the data, strips away any malicious or random fields the user tried to inject, and returns the sanitized value. The middleware assigns this clean data back to req.body = value and calls next().
+
+Step 4: The Brains (auth.controller.js)
+Because next() was called, the request safely enters the controller.
+
+The controller's job is purely HTTP management: it reads the clean req.body, handles the status codes, and determines what to send back to the client.
+
+It doesn't do heavy database lifting or business calculations itself; instead, it extracts the data and passes it to the service layer: await authService.createUser(req.body).
+
+Step 5: The Worker (auth.service.js)
+The service layer handles your core business logic.
+
+This is where you write code to check if the user's email already exists in the system, or where you turn their plain-text password into a secure hash (bcrypt.hash()).
+
+Step 6: The Vault Guard (auth.model.js)
+Once the password is encrypted and the data is fully ready, the service layer calls your Mongoose model: await User.create(processedData).
+
+Your Mongoose schema makes one final safety check to ensure data types match perfectly (e.g., ensuring isVerified defaults to false), opens a secure connection to MongoDB, and writes the data permanently to the database collection.
