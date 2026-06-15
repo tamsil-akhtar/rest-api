@@ -15,7 +15,7 @@ const authenticate=async (req,res,next)=>{
 
     const user=await User.findById(decoded.id)
     if(!user)
-        ApiError.unAuthorized("User no longer exists")
+       throw ApiError.unAuthorized("User no longer exists")
 
     req.user={
         id:user._id,
@@ -23,7 +23,10 @@ const authenticate=async (req,res,next)=>{
         name:user.name,
         email:user.email
     };
+
     next()
 }
+
+const authorize 
 
 export {authenticate}
