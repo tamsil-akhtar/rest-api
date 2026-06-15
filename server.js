@@ -5,7 +5,7 @@ const PORT=process.env.PORT||5500
 const server=async () => {
     //Database connection
     await connectDb
-    const server_run=app.listen(0,()=>{
+    const server_run=app.listen(PORT,()=>{
         console.log(`Server is running at PORT:${PORT} and in ${process.env.NODE_ENV} mode`);
     })
 }

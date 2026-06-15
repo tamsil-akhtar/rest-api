@@ -27,6 +27,12 @@ const authenticate=async (req,res,next)=>{
     next()
 }
 
-const authorize 
+const authorize=(...roles)=>{
+    return (req,res,next)=>{
+        if(!roles.includes(req.user.role))
+            throw ApiError.forbidden("You dont have permission to perform this action")
+        next();
+    }
+}
 
-export {authenticate}
+export {authenticate,authorize}
