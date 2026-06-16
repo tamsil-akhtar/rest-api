@@ -1,3 +1,5 @@
+import { use } from "react"
+import { sendVerificationEmail } from "../../common/config/email.js"
 import ApiError from "../../common/utils/api-error.js"
 import { generateAccessToken, generateRefreshToken, generateResetToken, verifyRefreshToken } from "../../common/utils/jwt.utils.js"
 import User from "./auth.model.js"
@@ -19,7 +21,19 @@ const registerUser=async ({name,email,password,role})=>{
         role,
         verifiedToken:hashToken
     })
+    
+    try {
+        await sendVerificationEmail(email,rawToken)
+    } catch (error) {
+        console.error(error)
+    }
     //send an email to user with token:rawtoken
+    const userobj=existing.toObject()
+
+    delete userobj.password
+    delete userobj.verifiedToken
+
+    return {userobj}
 }
 
 
@@ -27,8 +41,8 @@ const login=async ({email,password})=>{
     const user=await User.findOne({email}).select("+password")
     if(!user)
         throw new ApiError.unAuthorized("Inavlid email or password!") 
-    const isMatch=await user.comparePassword(password)
 
+    const isMatch=await user.comparePassword(password)
     if(!isMatch)
         throw ApiError.notFound("Password not match")
     if(!user.isVerified)
@@ -92,6 +106,16 @@ const forget_password=async ({email})=>{
     return {rawToken}
     //TODO :Mail bhejna nhi aata
 }
+const verifyEmail=async (token)=>{
+    const hashedToken=hashToken(token)
+    const user=await User.findOne({verificationToken:hashedToken}).select("+verificationToken")
+
+    user.isVerified=true;
+    user.verifiedToken=undefined
+
+    await user.save()
+    return user
+}
 const new_Password=async ({token,new_pass})=>{
     const hashedtoken=hashToken(token)
 
@@ -112,4 +136,10 @@ const new_Password=async ({token,new_pass})=>{
         message:"Password reset successfull"
     }
 }
-export {registerUser,login,Refresh,forget_password,new_Password,logout}
+const getMe=async (userId)=>{
+    const user=await User.findById(userId)
+    if(!user)
+        throw new ApiError.notFound("User not found")
+    return user
+}
+export {registerUser,login,Refresh,forget_password,new_Password,logout,getMe,verifyEmail}

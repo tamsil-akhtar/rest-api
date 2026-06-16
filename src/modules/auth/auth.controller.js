@@ -20,11 +20,16 @@ const login=async (req,res)=>{
         maxAge:7*24*60*60*1000//7 days
     })
 
-    ApiResponse.ok(res,"Login successfully!",{user,accessToken})
+    ApiResponse.ok(res,"Login successfully!",{user,accessToken,refreshToken})
 }
 const logout=async (req,res)=>{
     await Register.logout(req.user.id)
     res.clearCookie("refreshToke","accessToken")
     ApiResponse.ok(res,"Logout success")
 }
-export {register} 
+
+const getMe=async (req,res)=>{
+    const user=await Register.getMe(req.user.id)
+    res.ok(res,"User profile",user)
+}
+export {register,login,logout,getMe} 

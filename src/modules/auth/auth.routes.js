@@ -9,5 +9,7 @@ const router=Router()
 router.post("/register",validate(RegisterDto),Controller.register)
 
 router.post("/login",validate(),Controller.login)
-router.get("/profile",authenticate(loginDto),Controller.getMe)
+router.post("/logout",authenticate,Controller.logout)
+router.get("/profile",authenticate,Controller.getMe)
+
 export default router
