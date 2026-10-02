@@ -40,7 +40,7 @@ const registerUser=async ({name,email,password,role})=>{
 const login=async ({email,password})=>{
     const user=await User.findOne({email}).select("+password")
     if(!user)
-        throw new ApiError.unAuthorized("Inavlid email or password!") 
+        throw new ApiError.unAuthorized("Inavlid email") 
 
     const isMatch=await user.comparePassword(password)
     if(!isMatch)

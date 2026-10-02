@@ -8,8 +8,8 @@ const router=Router()
 
 router.post("/register",validate(RegisterDto),Controller.register)
 
-router.post("/login",validate(),Controller.login)
+router.post("/login",validate(loginDto),Controller.login)
 router.post("/logout",authenticate,Controller.logout)
 router.get("/profile",authenticate,Controller.getMe)
-
+router.get("/verify-email/:token",Controller.ver)
 export default router

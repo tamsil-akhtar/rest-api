@@ -6,13 +6,13 @@ class ApiError extends Error{
         Error.captureStackTrace(this,this.constructor)
     }
     static badRequest(message="Bad request"){
-        throw new ApiError(401,message)
+        return  new ApiError(401,message)
     }
     static unAuthorized(message="No data"){
-        throw new ApiError(400,message)
+        return new ApiError(400,message)
     }
     static conflict(message ="User already sxist"){
-        throw new ApiError(409,message)
+        return new ApiError(409,message)
         
     }
 

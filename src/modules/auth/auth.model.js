@@ -37,8 +37,8 @@ const userSchema=new mongoose.Schema({
     resetPasswordExpires:{type:String,select:false},
 },{timeLog:true})
 
-userSchema.pre("save",async (next)=>{
-    if(!this.isModified("password")) return next()
+userSchema.pre("save",async ()=>{
+    if(!this.isModified("password")) return 
     this.password=await bcrypt.hash(this.password,12)
     next()
 })

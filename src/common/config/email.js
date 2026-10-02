@@ -13,20 +13,20 @@ const transporter = nodemailer.createTransport({
 
 const sendMail=async (to,subject,html)=>{
     await transporter.sendMail({
-        from:`${process.env.SMTP_FROM_EMAIL}`,
+        from:`${process.env.SMTP_FROM_NAME}<${process.env.SMTP_FROM_EMAIL}`,        
         to,
         subject,
         html
     })
 }
 
-const sendVerificationEmail=(email,token)=>{
-    await transporter.sendMail({
-        from:`${process.env.SMTP_FROM_EMAIL}`,
+const sendVerificationEmail=async (email,token)=>{
+    const url=`${process.env.CLIENT_URL}/verify-email/${token}`
+    await sendMail(
         email,
-        subject,
-        html
-    })
+        "Verify your email",
+        `<h2>Welcome</h2><p>Click <a href="${url}>here</a> to verify your email </p>"`,
+    )
 }
 
 export {sendMail,sendVerificationEmail}
