@@ -19,7 +19,7 @@ const registerUser=async ({name,email,password,role})=>{
         email,
         password,
         role,
-        verifiedToken:hashToken
+        verifiedToken:hashedToken
     })
     
    try {

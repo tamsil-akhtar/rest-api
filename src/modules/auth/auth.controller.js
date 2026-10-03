@@ -30,7 +30,7 @@ const logout=async (req,res)=>{
 
 const getMe=async (req,res)=>{
     const user=await Register.getMe(req.user.id)
-    res.ok(res,"User profile",user)
+    ApiResponse.ok(res,"User profile",user)
 }
 const verifyEmail = async (req, res) => {
     const user = await Register.verifyEmail(req.params.token);
