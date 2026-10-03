@@ -16,14 +16,14 @@ const userSchema=new mongoose.Schema({
         unique:true
     },
     password:{
-        type:string,
+        type:String,
         requires:[true,"Password is required"],
         minlength:8,
         select:false 
         //We know;
     },
     role:{
-        type:string,
+        type:String,
         enum:["customer","admin","seller"],
         default:"customer"
     },
@@ -37,11 +37,12 @@ const userSchema=new mongoose.Schema({
     resetPasswordExpires:{type:String,select:false},
 },{timeLog:true})
 
-userSchema.pre("save",async ()=>{
-    if(!this.isModified("password")) return 
-    this.password=await bcrypt.hash(this.password,12)
-    next()
-})
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) {
+        return;
+    }
+    this.password = await bcrypt.hash(this.password, 12);
+});
 
 userSchema.methods.comparePassword=async function(clearTextPassword){
     return bcrypt.compare(clearTextPassword,this.password)

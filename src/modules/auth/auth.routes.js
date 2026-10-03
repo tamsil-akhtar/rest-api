@@ -11,5 +11,5 @@ router.post("/register",validate(RegisterDto),Controller.register)
 router.post("/login",validate(loginDto),Controller.login)
 router.post("/logout",authenticate,Controller.logout)
 router.get("/profile",authenticate,Controller.getMe)
-router.get("/verify-email/:token",Controller.ver)
+router.get("/verify-email/:token",Controller.verifyEmail)
 export default router

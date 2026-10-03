@@ -1,13 +1,29 @@
-import BaseDto from "../../../common/dto/base.dto"
-import Joi from "joi"
+import Joi from "joi";
+import BaseDto from "../../../common/dto/base.dto.js";
 
-class RegisterDto extends BaseDto{
-    static schema=Joi.object({
-        name:Joi.string().trim().min(2).required(),
-        email:Joi.string().email().lowercase().required(),
-        password:Joi.string().message("Password must contain 8 chars min").min(8).required(),
-        role:Joi.string().valid("Customer","Seller").default("Customer")
-    })
+class RegisterDto extends BaseDto {
+    static schema = Joi.object({
+        name: Joi.string()
+            .trim()
+            .min(2)
+            .required(),
+
+        email: Joi.string()
+            .email()
+            .lowercase()
+            .required(),
+
+        password: Joi.string()
+            .min(8)
+            .required()
+            .messages({
+                "string.min": "Password must contain 8 chars min"
+            }),
+
+        role: Joi.string()
+            .valid("customer", "seller")
+            .default("customer")
+    });
 }
 
-export default RegisterDto
+export default RegisterDto;

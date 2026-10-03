@@ -1,5 +1,5 @@
-import ApiResponse from "../../common/utils/api-response"
-import * as Register from "./auth.service"
+import ApiResponse from "../../common/utils/api.response.js"
+import * as Register from "./auth.service.js"
 
 const register=async (req,res) => {
     const user=await Register.registerUser(req.body)
@@ -24,7 +24,7 @@ const login=async (req,res)=>{
 }
 const logout=async (req,res)=>{
     await Register.logout(req.user.id)
-    res.clearCookie("refreshToke","accessToken")
+    res.clearCookie("refreshToken","accessToken")
     ApiResponse.ok(res,"Logout success")
 }
 
@@ -32,4 +32,13 @@ const getMe=async (req,res)=>{
     const user=await Register.getMe(req.user.id)
     res.ok(res,"User profile",user)
 }
-export {register,login,logout,getMe} 
+const verifyEmail = async (req, res) => {
+    const user = await Register.verifyEmail(req.params.token);
+
+    ApiResponse.ok(
+        res,
+        "Email verified successfully",
+        user
+    );
+};
+export {register,login,logout,getMe,verifyEmail} 

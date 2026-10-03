@@ -1,20 +1,20 @@
-import { use } from "react"
 import { sendVerificationEmail } from "../../common/config/email.js"
-import ApiError from "../../common/utils/api-error.js"
+import ApiError from "../../common/utils/api.error.js"
 import { generateAccessToken, generateRefreshToken, generateResetToken, verifyRefreshToken } from "../../common/utils/jwt.utils.js"
 import User from "./auth.model.js"
+import crypto from "crypto"
 
 const hashToken=(token)=>{
     return crypto.createHash("sha256").update(token).digest("hex")
 }
-    
+
 const registerUser=async ({name,email,password,role})=>{
     const existing =await User.findOne({email})
         if(existing)
-          throw new ApiError.conflict("Email already exist")
-    const{rawToken,hashToken}=generateResetToken()
+          throw ApiError.conflict("Email already exist")
+    const{rawToken,hashToken:hashedToken}=generateResetToken()
 
-    await User.create({
+    const user=await User.create({
         name,
         email,
         password,
@@ -22,13 +22,15 @@ const registerUser=async ({name,email,password,role})=>{
         verifiedToken:hashToken
     })
     
-    try {
-        await sendVerificationEmail(email,rawToken)
+   try {
+    console.log("Sending verification email to:", email);
+    await sendVerificationEmail(email, rawToken);
+    console.log("Verification email sent successfully");
     } catch (error) {
-        console.error(error)
+         console.error("EMAIL ERROR:", error);
     }
     //send an email to user with token:rawtoken
-    const userobj=existing.toObject()
+    const userobj=user.toObject()
 
     delete userobj.password
     delete userobj.verifiedToken
@@ -62,14 +64,14 @@ const login=async ({email,password})=>{
 
 const Refresh=async (token)=>{
     if(!token)
-        throw new ApiError.unAuthorized("Refresh Token Missing")
+        return new ApiError.unAuthorized("Refresh Token Missing")
     const decoded=verifyRefreshToken(token)
 
     const user=await User.findById(decoded.id).select("+refreshToken")
     if(!user)
-        throw new ApiError.unAuthorized("User not found")
+        return new ApiError.unAuthorized("User not found")
     if(user.refreshToken!==hashToken(token))
-        throw new ApiError.unAuthorized("Invalid refresh Token")
+        return new ApiError.unAuthorized("Invalid refresh Token")
 
     const accessToken=generateAccessToken({id:user._id,role:user.role})
     const refreshToken=generateRefreshToken({id:user._id})
@@ -93,7 +95,7 @@ const forget_password=async ({email})=>{
     const user=await User.findOne({email})
 
     if(!user)
-        throw new ApiError.notFound("No account with that email")
+        return new ApiError.notFound("No account with that email")
 
     const {rawToken,hashToken}=generateResetToken()
     user.resetPasswordToken=hashToken
@@ -106,16 +108,21 @@ const forget_password=async ({email})=>{
     return {rawToken}
     //TODO :Mail bhejna nhi aata
 }
-const verifyEmail=async (token)=>{
-    const hashedToken=hashToken(token)
-    const user=await User.findOne({verificationToken:hashedToken}).select("+verificationToken")
-
-    user.isVerified=true;
-    user.verifiedToken=undefined
-
-    await user.save()
-    return user
-}
+const verifyEmail = async (token) => {
+    const hashedToken = hashToken(token);
+    console.log("TOKEN FROM URL:", token);
+    console.log("HASHED URL TOKEN:", hashedToken);
+    const user = await User.findOne({
+        verifiedToken: hashedToken
+    }).select("+verifiedToken");
+    if (!user) {
+        throw ApiError.notFound("Invalid or expired verification token");
+    }
+    user.isVerified = true;
+    user.verifiedToken = undefined;
+    await user.save();
+    return user;
+};
 const new_Password=async ({token,new_pass})=>{
     const hashedtoken=hashToken(token)
 
@@ -124,7 +131,7 @@ const new_Password=async ({token,new_pass})=>{
     }}).select("+password")
 
     if(!user)
-        throw new ApiError.unAuthorized("Invalid token")
+        return new ApiError.unAuthorized("Invalid token")
 
     user.password=new_pass
     user.resetPasswordToken=undefined
@@ -139,7 +146,7 @@ const new_Password=async ({token,new_pass})=>{
 const getMe=async (userId)=>{
     const user=await User.findById(userId)
     if(!user)
-        throw new ApiError.notFound("User not found")
+        return new ApiError.notFound("User not found")
     return user
 }
 export {registerUser,login,Refresh,forget_password,new_Password,logout,getMe,verifyEmail}
